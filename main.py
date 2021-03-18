@@ -3,16 +3,17 @@ import cryptocompare
 import datetime
 import urllib.request, json
 import pandas as pd
+pd.options.mode.chained_assignment = None
 import collections
 import csv
 from textblob import TextBlob as NLP
 from IPython.display import display
+import time
 CRYPTO_LINK = "https://www.cryptocompare.com/api/data/coinlist/"
-NUMBER_OF_TWEETS = 100
+NUMBER_OF_TWEETS = 200
 NUMBER_OF_FOLLOWERS = 100
 
 def get_twitter_api():
-    BEARER_TOKEN = ""
     auth = tweepy.OAuthHandler("", "")
     auth.set_access_token("", "")
 
@@ -48,7 +49,7 @@ def get_cryptos(link):
         data = json.loads(url.read().decode())
         crypto_symbols = json_extract(data, 'Symbol')
         crypto_names = json_extract(data, 'CoinName')
-        cryptos = {(k, v): 0 for k, v in zip(crypto_symbols, crypto_names)}
+        cryptos = {(k, v): 0. for k, v in zip(crypto_symbols, crypto_names)}
         return cryptos
 
 def sort_followers(api):
@@ -65,9 +66,12 @@ def get_tweets(api, cryptos, sorted_followers):
         crypto_keys = list(cryptos.keys())
         for idx, key in enumerate(crypto_keys):
             if (f" {key[0]} " in tweet.text) or (f" {key[1]} " in tweet.text) or (f"${key[0]}" in tweet.text) or (f"${key[1]}" in tweet.text) or (f"#{key[0]}" in tweet.text) or (f"#{key[1]}" in tweet.text):
-                polarity = NLP(tweet.text).sentiment.polarity
-                cryptos[key] += polarity*sorted_followers[tweet.user.name]
-                #tweets.append(f"*** AT {tweet.created_at} ->{tweet.user.name}<- with polarity={NLP(tweet.text).sentiment} ==={tweet.text}=== ***")
+                if len(json_extract(
+                        cryptocompare.get_historical_price(key[0], currency='USD', timestamp=datetime.datetime.now()),
+                        'USD')) != 0:
+                    polarity = NLP(tweet.text).sentiment.polarity
+                    cryptos[key] += polarity*sorted_followers[tweet.user.name]
+                    #tweets.append(f"*** AT {tweet.created_at} ->{tweet.user.name}<- with polarity={NLP(tweet.text).sentiment} ==={tweet.text}=== ***")
         if indx == NUMBER_OF_TWEETS - 1 :
             last_tweet_time = tweet.created_at
     cryptos = dict(sorted(cryptos.items(), key=lambda item: item[1], reverse=True))
@@ -83,21 +87,24 @@ def get_mani(cryptos, last_tweet_time):
     time = datetime.datetime.now() - datetime.timedelta(minutes=30)
     df_mani[f'PriceAt {time}'] = 0
     for idx, key in enumerate(list(cryptos.keys())):
-        if (json_extract(cryptocompare.get_historical_price(key[0], currency='USD', timestamp=time), 'USD')) is not None:
+        #print(idx, key)
+        #print(json_extract(cryptocompare.get_historical_price(key[0], currency='USD', timestamp=time), 'USD'))
+        if len(json_extract(cryptocompare.get_historical_price(key[0], currency='USD', timestamp=time), 'USD'))!=0:
             df_mani[f'PriceAt {time}'][idx] = json_extract(cryptocompare.get_historical_price(key[0], currency='USD', timestamp=time), 'USD')[0]
         else:
             df_mani[f'PriceAt {time}'][idx] = 0
+    return df_mani
 
-def check_prices(df_mani):
+def check_prices(df_mani, cryptos):
     time = datetime.datetime.now()
     df_mani[f'PriceAt {time}'] = 0
     for idx, key in enumerate(list(cryptos.keys())):
-        if (json_extract(cryptocompare.get_historical_price(key[0], currency='USD', timestamp=time), 'USD')) is not None:
+        if len(json_extract(cryptocompare.get_historical_price(key[0], currency='USD', timestamp=time), 'USD'))!=0:
             df_mani[f'PriceAt {time}'][idx] = json_extract(cryptocompare.get_historical_price(key[0], currency='USD', timestamp=time), 'USD')[0]
         else:
             df_mani[f'PriceAt {time}'][idx] = 0
     print(df_mani)
-    df.to_csv('Results.csv', index=False)
+    df_mani.to_csv('Results.csv', index=False)
 
 def main_method():
 
@@ -119,12 +126,15 @@ def main_method():
     #Money Printer Go Brrr
     df_mani = get_mani(cryptos, last_tweet_time)
 
-    while True:
-        check_prices(df_mani)
-        sleep(60)
+    for i in range(0,12):
+        check_prices(df_mani, cryptos)
+        time.sleep(60)
 
 if __name__ == '__main__':
-    main_method()
+    #print(type(0.))
+    while True:
+        main_method()
+        time.sleep(750)
     time = datetime.datetime.now() - datetime.timedelta(minutes=30)
     print(json_extract(cryptocompare.get_historical_price('BTC', currency='USD', timestamp=time), 'USD')[0])
     print(time)

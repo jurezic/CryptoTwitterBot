@@ -1,11 +1,21 @@
-"('BTC', 'Bitcoin')",136.5
+"('BTC', 'Bitcoin')",705.875
+"('ETH', 'Ethereum')",222.9
 "('BT', 'BT.Finance')",134.2
+"('LQD', 'Liquid')",128.5
+"('LQBTC', 'Liquid Bitcoin')",128.5
 "('LIVE', 'Live Stars')",112.09090909090908
 "('BSC', 'BowsCoin')",99.0
 "('BS', 'BlackShadowCoin')",99.0
+"('AV', 'Avatar Coin')",95.2
+"('AVAX', 'Avalanche')",95.2
+"('AVA', 'Travala')",95.2
+"('D', 'Denarius')",86.0
+"('GAS', 'Gas')",86.0
+"('DEX', 'DEX')",86.0
 "('U', 'Ucoin')",46.199999999999996
-"('NICE', 'Nice')",46.199999999999996
-"('TWTR.CUR', 'Twitter')",39.445
+"('KISC', 'Kaiser')",22.349999999999994
+"('KNC', 'Kyber Network')",10.5
+"('ATH', 'Atheios')",10.5
 "('CTO', 'Crypto')",7.8374999999999995
+"('HT', 'Huobi Token')",3.0500000000000003
 "('ETH2', 'Eth 2.0 Staking by Pool-X')",-65.5
-"('ETH', 'Ethereum')",-65.5
